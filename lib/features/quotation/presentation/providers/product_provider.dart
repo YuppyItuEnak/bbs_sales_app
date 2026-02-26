@@ -1,0 +1,58 @@
+import 'package:bbs_sales_app/data/models/item/item_model.dart';
+import 'package:bbs_sales_app/data/services/item/item_repository.dart';
+import 'package:flutter/material.dart';
+
+class ProductProvider with ChangeNotifier {
+  final ItemRepository _itemRepository = ItemRepository();
+  List<ItemModel> _products = [];
+  bool _isLoading = false;
+  String? _error;
+  int _page = 1;
+  bool _hasMore = true;
+
+  List<ItemModel> get products => _products;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  bool get hasMore => _hasMore;
+
+  Future<void> fetchProducts({
+    required String token,
+    required String itemDivisionId,
+    String? search,
+    bool isRefresh = false,
+  }) async {
+    if (isRefresh) {
+      _products = [];
+      _page = 1;
+      _hasMore = true;
+      notifyListeners();
+    }
+
+    if (_isLoading || !_hasMore) return;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final newProducts = await _itemRepository.fetchItems(
+        search: search,
+        token: token,
+        itemDivisionId: itemDivisionId,
+        page: _page,
+      );
+      if (newProducts.isEmpty) {
+        _hasMore = false;
+      } else {
+        _products.addAll(newProducts);
+        _page++;
+      }
+    } catch (e) {
+      _error = 'Failed to fetch products: $e';
+      _hasMore = false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+}
