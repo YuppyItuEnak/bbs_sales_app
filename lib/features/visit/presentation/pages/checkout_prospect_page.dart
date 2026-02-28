@@ -43,7 +43,7 @@ class _CheckoutProspectView extends StatefulWidget {
 
 class _CheckoutProspectViewState extends State<_CheckoutProspectView> {
   final TextEditingController _notesController = TextEditingController();
-
+  String? _newProspectId;
   File? _imageFile;
   Position? _currentPosition;
   String? _currentAddress;
@@ -78,10 +78,7 @@ class _CheckoutProspectViewState extends State<_CheckoutProspectView> {
     }
 
     try {
-      await visitProvider.fetchVisitDetail(
-        widget.visitId,
-        authProvider.token!,
-      );
+      await visitProvider.fetchVisitDetail(widget.visitId, authProvider.token!);
       setState(() {
         _visitDetail = visitProvider.visitDetail;
       });
@@ -181,37 +178,91 @@ class _CheckoutProspectViewState extends State<_CheckoutProspectView> {
     }
 
     if (!_prospectCreated) {
-      final bool? prospectCreatedResult = await Navigator.push(
+      final dynamic result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => CreateProspectFromVisitPage(
-            visitRealizationDetail: _visitDetail!, // Changed
+            visitRealizationDetail: _visitDetail!,
           ),
         ),
       );
 
-      if (prospectCreatedResult != true) {
-        // If prospect was not created or user cancelled, stop here.
+      debugPrint("Hasil dari CreateProspectFromVisitPage: $result");
+
+      // PASTIKAN ID VALID (Bukan false, bukan null)
+      if (result != null && result is String && result.length > 10) {
+        setState(() {
+          _prospectCreated = true;
+          _newProspectId = result;
+        });
+
+        // PENTING: Jangan berhenti di sini. Langsung panggil fungsi checkout!
+        await _executeCheckout(token, realizationId, result);
+      } else {
+        // Jika user cancel atau result null
         return;
       }
-      // If prospect was created, _prospectCreated is now true.
-      setState(() {
-        _prospectCreated = true;
-      });
+    } else {
+      // Jika prospek sudah dibuat sebelumnya tapi mau coba submit lagi
+      await _executeCheckout(token, realizationId, _newProspectId);
     }
 
-    // Now _prospectCreated is guaranteed to be true (either initially or after creation)
-    // Proceed with checkout
+    // // Now _prospectCreated is guaranteed to be true (either initially or after creation)
+    // // Proceed with checkout
+    // final provider = Provider.of<ProspectProvider>(context, listen: false);
+
+    // // Perform checkout
+    // final data = {
+    //   'end_at': DateFormat('HH:mm:ss').format(DateTime.now()),
+    //   'lat_end': _currentPosition!.latitude.toString(),
+    //   'long_end': _currentPosition!.longitude.toString(),
+    //   'notes': _notesController.text,
+    //   'status': 'done-unplanned',
+    //   'prospect_id': _newProspectId ?? 'unkown',
+    // };
+
+    // final success = await provider.performCheckout(
+    //   realizationId: realizationId,
+    //   data: data,
+    //   photoPath: _imageFile!.path,
+    //   token: token,
+    // );
+
+    // if (success && mounted) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('Checkout berhasil!'),
+    //       backgroundColor: Colors.green,
+    //     ),
+    //   );
+    //   Navigator.of(context).pop(true);
+    //   Navigator.of(context).pop(true);
+    // } else if (mounted) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text(provider.error ?? 'Checkout failed!')),
+    //   );
+    // }
+  }
+
+  Future<void> _executeCheckout(
+    String token,
+    String realizationId,
+    String? prospectId,
+  ) async {
     final provider = Provider.of<ProspectProvider>(context, listen: false);
 
-    // Perform checkout
-    final data = {
+    final Map<String, String> data = {
       'end_at': DateFormat('HH:mm:ss').format(DateTime.now()),
       'lat_end': _currentPosition!.latitude.toString(),
       'long_end': _currentPosition!.longitude.toString(),
       'notes': _notesController.text,
       'status': 'done-unplanned',
+      'prospect_id': prospectId ?? '',
     };
+
+    debugPrint(
+      "🚀 Memulai proses PUT Checkout dengan prospect_id: $prospectId",
+    );
 
     final success = await provider.performCheckout(
       realizationId: realizationId,
@@ -223,15 +274,19 @@ class _CheckoutProspectViewState extends State<_CheckoutProspectView> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Checkout berhasil!'),
+          content: Text('Checkout Berhasil!'),
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.of(context).pop(true);
-      Navigator.of(context).pop(true);
+
+      // Kembali ke halaman utama (List Visit)
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.error ?? 'Checkout failed!')),
+        SnackBar(
+          content: Text(provider.error ?? 'Gagal Checkout!'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -327,7 +382,10 @@ class _CheckoutProspectViewState extends State<_CheckoutProspectView> {
               ),
               child: provider.isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Lanjut", style: TextStyle(fontSize: 16, color: Colors.white)),
+                  : const Text(
+                      "Lanjut",
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
             ),
           );
         },

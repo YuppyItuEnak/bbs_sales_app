@@ -44,6 +44,7 @@ class ProspectCreateModel {
     this.status = 1,
     this.customerGroupName,
     this.address,
+    this.notes,
   });
 
   Map<String, dynamic> toJson() {

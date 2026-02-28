@@ -883,17 +883,17 @@ class _QuotationFormPageState extends State<QuotationFormPage> {
                           children: [
                             Text('PPN (${_selectedPpn?.value2 ?? '...'}%)'),
                             const SizedBox(width: 8),
-                            InkWell(
-                              onTap: _showPpnOptions,
-                              child: const Text(
-                                'Ubah',
-                                style: TextStyle(
-                                  color: Color(0xFF5F6BF7),
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
+                            // InkWell(
+                            //   onTap: _showPpnOptions,
+                            //   child: const Text(
+                            //     'Ubah',
+                            //     style: TextStyle(
+                            //       color: Color(0xFF5F6BF7),
+                            //       fontWeight: FontWeight.w500,
+                            //       fontSize: 12,
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                         Row(
@@ -952,7 +952,12 @@ class _QuotationFormPageState extends State<QuotationFormPage> {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Color(0xFF5F6BF7)),
+                        // MENGATUR WARNA BORDER: Jika form valid biru, jika tidak grey
+                        side: BorderSide(
+                          color: _isFormValid()
+                              ? const Color(0xFF5F6BF7)
+                              : Colors.grey[400]!,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -960,7 +965,7 @@ class _QuotationFormPageState extends State<QuotationFormPage> {
                       onPressed:
                           (_isFormValid() && !quotationProvider.isSubmitting)
                           ? () => _submitForm(isApproval: false)
-                          : null,
+                          : null, // Tombol otomatis disable jika onPressed bernilai null
                       child: quotationProvider.isSubmitting
                           ? const SizedBox(
                               height: 20,
@@ -972,9 +977,14 @@ class _QuotationFormPageState extends State<QuotationFormPage> {
                                 ),
                               ),
                             )
-                          : const Text(
+                          : Text(
                               'Simpan',
-                              style: TextStyle(color: Color(0xFF5F6BF7)),
+                              style: TextStyle(
+                                // MENGATUR WARNA TEKS: Jika form valid biru, jika tidak grey
+                                color: _isFormValid()
+                                    ? const Color(0xFF5F6BF7)
+                                    : Colors.grey[400],
+                              ),
                             ),
                     ),
                   ),

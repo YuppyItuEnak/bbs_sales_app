@@ -722,22 +722,25 @@ class _AddReimburseContentState extends State<_AddReimburseContent> {
                         if (_startKmController.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Kilometer Awal tidak boleh kosong.'),
+                              content: Text(
+                                'Kilometer Awal tidak boleh kosong.',
+                              ),
                               backgroundColor: Colors.red,
                             ),
                           );
                           return;
                         }
-                        if (_endKmController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Kilometer Akhir tidak boleh kosong.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-                        if (_pickedFotoAwal == null && (_fotoAwalUrl == null || _fotoAwalUrl!.isEmpty)) {
+                        // if (_endKmController.text.isEmpty) {
+                        //   ScaffoldMessenger.of(context).showSnackBar(
+                        //     const SnackBar(
+                        //       content: Text('Kilometer Akhir tidak boleh kosong.'),
+                        //       backgroundColor: Colors.red,
+                        //     ),
+                        //   );
+                        //   return;
+                        // }
+                        if (_pickedFotoAwal == null &&
+                            (_fotoAwalUrl == null || _fotoAwalUrl!.isEmpty)) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Foto KM awal tidak boleh kosong.'),
@@ -746,20 +749,50 @@ class _AddReimburseContentState extends State<_AddReimburseContent> {
                           );
                           return;
                         }
-                        if (_pickedFotoAkhir == null && (_fotoAkhirUrl == null || _fotoAkhirUrl!.isEmpty)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Foto KM akhir tidak boleh kosong.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
+
+                        if (widget.isEdit) {
+                          if (_endKmController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Kilometer Akhir tidak boleh kosong.',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                          if (_pickedFotoAkhir == null &&
+                              (_fotoAkhirUrl == null ||
+                                  _fotoAkhirUrl!.isEmpty)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Foto KM akhir tidak boleh kosong.',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
                         }
+                        // if (_pickedFotoAkhir == null && (_fotoAkhirUrl == null || _fotoAkhirUrl!.isEmpty)) {
+                        //   ScaffoldMessenger.of(context).showSnackBar(
+                        //     const SnackBar(
+                        //       content: Text('Foto KM akhir tidak boleh kosong.'),
+                        //       backgroundColor: Colors.red,
+                        //     ),
+                        //   );
+                        //   return;
+                        // }
                       } else {
-                        if (_amountController.text.isEmpty || _amountController.text == "0") {
+                        if (_amountController.text.isEmpty ||
+                            _amountController.text == "0") {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Jumlah Reimburse tidak boleh kosong.'),
+                              content: Text(
+                                'Jumlah Reimburse tidak boleh kosong.',
+                              ),
                               backgroundColor: Colors.red,
                             ),
                           );

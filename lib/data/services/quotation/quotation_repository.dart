@@ -68,6 +68,7 @@ class QuotationRepository {
     final queryParams = <String, String>{
       'filter_column_sales_id': salesId,
       'include': 'm_gen',
+      'no_paginate': 'true',
     };
 
     if (page != null) {

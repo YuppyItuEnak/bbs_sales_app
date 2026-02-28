@@ -109,38 +109,40 @@ class _SalesTargetPageState extends State<SalesTargetPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              _progressCircle(data.summary.percentage / 100),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  children: [
-                    _summaryItem(
-                      "Terpenuhi",
-                      _formatCurrency(data.summary.realisasi),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _smallSummary(
-                          "Target",
-                          _formatCurrency(data.summary.target),
-                        ),
-                        _smallSummary(
-                          "Sisa Target",
-                          _formatCurrency(data.summary.sisa),
-                        ),
-                      ],
-                    ),
-                  ],
+         
+          _progressCircle(data.summary.percentage / 100),
+          const SizedBox(width: 24),
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start, 
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _summaryItem(
+                  "Terpenuhi",
+                  _formatCurrency(data.summary.realisasi),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                _smallSummary("Target", _formatCurrency(data.summary.target)),
+                const SizedBox(height: 8),
+                _smallSummary(
+                  "Sisa Target",
+                  _formatCurrency(data.summary.sisa),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -162,6 +164,7 @@ class _SalesTargetPageState extends State<SalesTargetPage> {
       ],
     );
   }
+
 
   Widget _smallSummary(String label, String value) {
     return Column(

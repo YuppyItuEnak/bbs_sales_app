@@ -36,7 +36,8 @@ class CustomerRepository {
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
-      final List data = body['data'];
+      print("API Response Body: $body");
+      final List data = body['data'] ?? [];
 
       return data.map((e) => CustomerAddressModel.fromJson(e)).toList();
     } else {

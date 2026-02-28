@@ -142,7 +142,9 @@ class _ProductListPageState extends State<ProductListPage> {
                     children: [
                       Expanded(
                         child: Text(
-                          widget.productGroup.value1 ?? '-',
+                          widget.productGroup.value1?.isNotEmpty == true
+                              ? widget.productGroup.value1!
+                              : '-',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -291,20 +293,38 @@ class _ProductListPageState extends State<ProductListPage> {
                     }
 
                     final updatedItems = _selectedItems.map((selectedItem) {
-                      final weightMarketing =
-                          (selectedItem.item.uom?.toUpperCase() == 'PCS')
-                          ? 1.0
-                          : selectedItem.item.weightMarketing ??
-                                selectedItem.item.meter ??
-                                1.0;
-                      final newPrice =
-                          basePrice * selectedItem.quantity * weightMarketing;
+                      final uom = selectedItem.item.uom?.toUpperCase() ?? '';
+
+                      // Ambil nilai dari master item sesuai data web
+                      double weightVal =
+                          selectedItem.item.weightMarketing ?? 1.0;
+                      double lengthVal = selectedItem.item.meter ?? 1.0;
+
+                      double multiplier = 1.0;
+
+                      // Logika Berdasarkan Instruksi Senior
+                      if (uom == 'KG') {
+                        // Jika KG, harga dikali weight marketing (misal dikali 2)
+                        multiplier = weightVal;
+                      } else if (lengthVal > 1.0) {
+                        // Jika memiliki panjang > 1 (seperti Ornament-4m), harga dikali length
+                        multiplier = lengthVal;
+                      } else {
+                        // Jika unit biasa (PCS) tanpa length/weight khusus, multiplier tetap 1
+                        multiplier = 1.0;
+                      }
+
+                      final finalPrice = basePrice * multiplier;
+
+                      debugPrint(
+                        'DEBUG_HARGA: Base=$basePrice, UOM=$uom, Multiplier=$multiplier, Total=$finalPrice',
+                      );
 
                       final newPricelist =
                           selectedItem.item.pricelist?.copyWith(
-                            price: newPrice,
+                            price: finalPrice,
                           ) ??
-                          Pricelist(id: '', price: newPrice);
+                          Pricelist(id: '', price: finalPrice);
 
                       final newItem = selectedItem.item.copyWith(
                         pricelist: newPricelist,

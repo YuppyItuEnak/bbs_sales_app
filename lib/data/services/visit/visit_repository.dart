@@ -23,6 +23,7 @@ class VisitRepository {
       'filter_column_sales_id': salesId,
       'filter_column_customer_id': 'null',
       'where': 'visit_date=$date',
+      'no_pagination': 'true',
     };
 
     if (search != null && search.isNotEmpty) {
@@ -93,6 +94,7 @@ class VisitRepository {
           't_visit_sales,t_visit_realization,t_visit_realization>m_customer',
       'filter_column_t_visit_sales.id_sales': salesId,
       'where': 'date=$date',
+      'no_pagination': 'true',
     };
 
     if (search != null && search.isNotEmpty) {

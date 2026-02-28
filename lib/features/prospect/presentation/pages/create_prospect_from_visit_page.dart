@@ -204,13 +204,15 @@ class _CreateProspectFromVisitViewState
       nameTypeId: form.prefix?.id,
       topId: form.top?.id,
       pn: form.taxable == "YA",
-      // notes: form.notes,
+      notes: form.notes,
       isActive: true,
       currentApprovalLevel: 1,
       approvalCount: 0,
       approvedCount: 0,
       status: 1,
     );
+
+    debugPrint("Creating prospect with data: ${prospect.toJson()}");
 
     try {
       final success = await prospectProvider.createProspect(
@@ -221,14 +223,15 @@ class _CreateProspectFromVisitViewState
       // Cek lagi jika widget masih mounted sebelum melakukan navigasi
       if (!mounted) return;
 
-      if (success) {
+      if (success != null) {
+        debugPrint("Prospek baru berhasil dibuat dengan ID: ${success.id}");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Prospek berhasil dibuat!'),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop(true);
+        Navigator.of(context).pop(success.id);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -344,7 +347,19 @@ class _CreateProspectFromVisitViewState
                         hint: "Pilih Term of Payment",
                         value: form.top,
                         items: form.tops,
-                        onChanged: form.setTop,
+                        onChanged: (MGenModel? data) {
+                          // TAMBAHKAN DEBUG DISINI
+                          if (data != null) {
+                            debugPrint(
+                              "DEBUG_TOP: ID=${data.id}, Value1=${data.value1}, Group=${data.group}",
+                            );
+                          } else {
+                            debugPrint("DEBUG_TOP: Data yang dipilih NULL");
+                          }
+
+                          // Panggil fungsi asli
+                          form.setTop(data);
+                        },
                         itemAsString: (MGenModel u) => u.value1!,
                         searchHint: "Cari ToP...",
                       ),

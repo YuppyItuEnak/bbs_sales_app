@@ -121,7 +121,7 @@ class _ProspectVisitFormViewState extends State<_ProspectVisitFormView> {
     final token = Provider.of<AuthProvider>(context, listen: false).token!;
 
     final data = {
-      'unit_business_id': Provider.of<AuthProvider>(
+      'unit_bussiness_id': Provider.of<AuthProvider>(
         context,
         listen: false,
       ).unitBusinessId!,
@@ -135,6 +135,9 @@ class _ProspectVisitFormViewState extends State<_ProspectVisitFormView> {
       'status': 'undone',
       'notes': _notesController.text,
     };
+
+    debugPrint("Submitting data: $data");
+    debugPrint(" with photo path: ${_imageFile!.path}");
 
     final success = await provider.performProspectCheckIn(
       data: data,

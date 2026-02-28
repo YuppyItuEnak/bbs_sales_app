@@ -79,7 +79,7 @@ class ItemModel {
           : null,
       photo: json['photo'],
       weightMarketing: double.tryParse(
-        json['weight_marketing']?.toString() ?? '',
+        json['marketing_weight']?.toString() ?? '',
       ),
       meter: double.tryParse(json['meter']?.toString() ?? ''),
     );

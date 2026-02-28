@@ -23,15 +23,17 @@ class CustomerAddressModel {
 
   factory CustomerAddressModel.fromJson(Map<String, dynamic> json) {
     return CustomerAddressModel(
-      id: json['id'],
+      id: json['id']?.toString() ?? '',
       address: json['address'] ?? '',
       deliveryAreaId: json['delivery_area_id'] ?? '',
-      deliveryAreaName: json['m_delivery_area']['name'] ?? '',
+      deliveryAreaName: json['m_delivery_area'] != null
+          ? (json['m_delivery_area']['name'] ?? '')
+          : '',
       name: json['name'] ?? '',
-      customerId: json['customer_id'],
-      isDefault: json['is_default'] ?? false,
+      customerId: json['customer_id']?.toString() ?? '',
+      isDefault: json['is_default'] == true || json['is_default'] == 1,
       notes: json['notes'] ?? '',
-      isActive: json['is_active'] ?? false,
+      isActive: json['is_active'] == true || json['is_active'] == 1,
     );
   }
 }

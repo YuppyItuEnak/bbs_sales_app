@@ -1,6 +1,7 @@
 import 'package:bbs_sales_app/data/models/general/m_gen_model.dart';
 import 'package:bbs_sales_app/data/models/customer/customer_model.dart';
 import 'package:bbs_sales_app/data/models/prospect/prospect_create_model.dart';
+import 'package:bbs_sales_app/data/models/prospect/prospect_model.dart';
 import 'package:bbs_sales_app/data/models/visit/visit_realization_detail_model.dart';
 import 'package:bbs_sales_app/data/services/general/m_gen_repository.dart';
 import 'package:bbs_sales_app/data/services/prospect/prospect_repository.dart';
@@ -78,7 +79,7 @@ class ProspectProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> createProspect({
+  Future<ProspectModel?> createProspect({
     required ProspectCreateModel prospect,
     required String token,
   }) async {
@@ -87,14 +88,14 @@ class ProspectProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _prospectRepository.createProspect(
+      final result = await _prospectRepository.createProspect(
         prospect: prospect,
         token: token,
       );
-      return true;
+      return result;
     } catch (e) {
       _error = e.toString();
-      return false;
+      return null;
     } finally {
       _isLoading = false;
       notifyListeners();
