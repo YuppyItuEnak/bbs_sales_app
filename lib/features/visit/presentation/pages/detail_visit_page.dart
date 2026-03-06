@@ -242,7 +242,7 @@ class _DetailVisitViewState extends State<DetailVisitView> {
             listen: false,
           ).salesId!,
           'address': _currentAddress ?? '',
-          'status': 'undone',
+          'status': 'done-planned',
         };
         success = await provider.performCheckIn(
           data: data,
