@@ -15,6 +15,7 @@ class ReimburseCreateModel {
   int? approvalLevel;
   int? approvedCount;
   String? status;
+  double? rate_reimburse;
 
   ReimburseCreateModel({
     this.type,
@@ -33,6 +34,7 @@ class ReimburseCreateModel {
     this.fotoAwal,
     this.fotoAkhir,
     this.status,
+    this.rate_reimburse,
   });
 
   Map<String, dynamic> toJson() {
@@ -53,6 +55,7 @@ class ReimburseCreateModel {
       "foto_awal": fotoAwal,
       "foto_akhir": fotoAkhir,
       "status": status,
+      "rate_reimburse": rate_reimburse,
     }..removeWhere((key, value) => value == null);
   }
 }

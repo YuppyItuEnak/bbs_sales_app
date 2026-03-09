@@ -22,8 +22,8 @@ class ReimburseModel {
       id: json['id'],
       type: json['type'] ?? '',
       date: DateTime.parse(json['date']),
-      kmAwal: (json['km_awal'] as num).toInt(),
-      kmAkhir: (json['km_akhir'] as num).toInt(),
+      kmAwal: int.tryParse(json['km_awal']?.toString() ?? '0') ?? 0,
+      kmAkhir: int.tryParse(json['km_akhir']?.toString() ?? '0') ?? 0,
       code: json['code'] ?? '',
       status: json['status'] ?? '',
     );

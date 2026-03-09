@@ -163,12 +163,20 @@ class _AddReimburseContentState extends State<_AddReimburseContent> {
   }
 
   void _calculateReimbursement() {
+    final user = context.read<AuthProvider>().user;
+    final unitbisnis = context.read<AuthProvider>().unitBusinessId;
+    debugPrint("Usernya: $user");
+    debugPrint("Unit Bisnisnya: $unitbisnis");
     final startKm = _parseNumber(_startKmController.text);
     final endKm = _parseNumber(_endKmController.text);
 
-    if (endKm > startKm) {
+    // use rate from auth provider; if null default to 0
+    final rate = context.read<AuthProvider>().rateReimburse ?? 0.0;
+    debugPrint("Rate_reimburse: $rate");
+    if (endKm > startKm && rate > 0) {
       final selisih = endKm - startKm;
-      _calculatedTotal = (selisih / 30) * 10000;
+      // simple multiply difference by rate per km
+      _calculatedTotal = selisih * rate;
 
       _amountController.text = NumberFormat(
         '#,##0.##',
@@ -269,6 +277,8 @@ class _AddReimburseContentState extends State<_AddReimburseContent> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    
+                                    const SizedBox(height: 4),
                                     _buildLabel("Kilometer Awal*"),
                                     _buildTextField(
                                       controller: _startKmController,
@@ -830,6 +840,7 @@ class _AddReimburseContentState extends State<_AddReimburseContent> {
                         date: date!,
                         unitBusinessId: auth.unitBusinessId!,
                         total: _calculatedTotal,
+                        rate_reimburse: auth.rateReimburse,
                         kmAwal: double.tryParse(_startKmController.text) ?? 0,
                         kmAkhir: double.tryParse(_endKmController.text) ?? 0,
                         note: _noteController.text,
@@ -854,7 +865,8 @@ class _AddReimburseContentState extends State<_AddReimburseContent> {
                           type: newReimburse.type,
                           date: newReimburse.date,
                           unitBusinessId: newReimburse.unitBusinessId,
-                          total: (newReimburse.total! / 30) * 10000,
+                          total: _calculatedTotal,
+                          rate_reimburse: auth.rateReimburse,
                           kmAwal: newReimburse.kmAwal,
                           kmAkhir: newReimburse.kmAkhir,
                           note: newReimburse.note,

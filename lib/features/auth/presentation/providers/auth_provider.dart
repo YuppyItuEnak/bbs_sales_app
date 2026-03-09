@@ -13,12 +13,15 @@ class AuthProvider with ChangeNotifier {
   User? _user;
   String? _token;
   String? _unitBusinessId;
+  // reimburse rate fetched from unit business
+  double? _rateReimburse;
   bool _isLoading = false;
   String? _error;
 
   User? get user => _user;
   String? get token => _token;
   String? get unitBusinessId => _unitBusinessId;
+  double? get rateReimburse => _rateReimburse;
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get salesId {
@@ -54,6 +57,10 @@ class AuthProvider with ChangeNotifier {
             _token!,
             prefs,
           );
+          // rate will be set inside the helper from prefs
+          if (prefs.containsKey('rate_reimburse')) {
+            _rateReimburse = prefs.getDouble('rate_reimburse');
+          }
         }
       }
 
@@ -108,6 +115,9 @@ class AuthProvider with ChangeNotifier {
         _token = storedToken;
         _user = User.fromJson(json.decode(storedUser));
         _unitBusinessId = prefs.getString('unit_bussiness_id');
+        if (prefs.containsKey('rate_reimburse')) {
+          _rateReimburse = prefs.getDouble('rate_reimburse');
+        }
         notifyListeners();
         return true;
       } catch (e) {
@@ -190,14 +200,22 @@ class AuthProvider with ChangeNotifier {
         final body = json.decode(response.body);
         final List data = body['data'] ?? [];
         if (data.isNotEmpty) {
-          final unitBusinessId =
-              data[0]['m_sales_area']?['m_unit_bussiness']?['id'];
+          final unitObj = data[0]['m_sales_area']?['m_unit_bussiness'];
+          final unitBusinessId = unitObj?['id'];
           final sales_area_id = data[0]['sales_area_id'];
           final sales_id = data[0]['sales_id'];
           if (unitBusinessId != null) {
             await prefs.setString('unit_bussiness_id', unitBusinessId);
             await prefs.setString('sales_area_id', sales_area_id);
             await prefs.setString('sales_id', sales_id);
+
+            // also fetch full unit business details to ensure rate_reimburse is present
+            await _fetchAndSaveUnitBusinessDetails(
+              unitBusinessId,
+              token,
+              prefs,
+            );
+
             return unitBusinessId;
           }
         }
@@ -208,5 +226,48 @@ class AuthProvider with ChangeNotifier {
       }
     }
     return null;
+  }
+
+  Future<void> _fetchAndSaveUnitBusinessDetails(
+    String unitBusinessId,
+    String token,
+    SharedPreferences prefs,
+  ) async {
+    try {
+      final uri = Uri.parse(
+        '${ApiConstants.baseUrl}/dynamic/m_unit_bussiness/$unitBusinessId',
+      );
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        final unitData = body['data'];
+
+        if (unitData != null) {
+          final rateVal = unitData['rate_reimburse'];
+          if (rateVal != null) {
+            final parsed = double.tryParse(rateVal.toString());
+            if (parsed != null) {
+              _rateReimburse = parsed;
+              await prefs.setDouble('rate_reimburse', parsed);
+              if (kDebugMode) {
+                print('✅ Rate reimburse fetched: $parsed');
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to fetch unit business details: $e');
+      }
+    }
   }
 }
