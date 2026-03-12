@@ -14,17 +14,21 @@ class ReimburseRepository {
 
   Future<List<ReimburseModel>> fetchReimburse({
     required String token,
-    required String salesId,
+    String? salesId,
     String? search,
     int page = 1,
     int paginate = 25,
   }) async {
     final queryParams = {
-      'where': 'sales_id=$salesId',
+      // 'where': 'sales_id=$salesId',
       'selectfield': 'id,type,date,km_awal,km_akhir,code,status',
       'page': page.toString(),
       'paginate': paginate.toString(),
     };
+
+    if (salesId != null && salesId.isNotEmpty) {
+      queryParams['where'] = 'sales_id=$salesId';
+    }
 
     if (search != null && search.isNotEmpty) {
       queryParams['search'] = search;
@@ -251,6 +255,8 @@ class ReimburseRepository {
       },
       body: jsonEncode(updateData.toJson()),
     );
+
+    print("Response body update reimburse: ${response.body}");
 
     if (response.statusCode != 200) {
       throw Exception('Gagal update reimburse');

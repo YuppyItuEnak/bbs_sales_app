@@ -12,6 +12,7 @@ import 'package:bbs_sales_app/features/quotation/presentation/providers/quotatio
 import 'package:bbs_sales_app/features/quotation/presentation/providers/top_provider.dart';
 import 'package:bbs_sales_app/features/tagihan/presentation/providers/tagihan_provider.dart';
 import 'package:bbs_sales_app/features/target/presentation/providers/target_sales_provider.dart';
+import 'package:bbs_sales_app/features/user_spv/presentation/home_spv.dart';
 import 'package:bbs_sales_app/features/visit/presentation/providers/visit_detail_provider.dart';
 import 'package:bbs_sales_app/features/visit/presentation/providers/visit_provider.dart';
 import 'package:flutter/material.dart';
@@ -122,9 +123,18 @@ class _RootPageState extends State<_RootPage> {
 
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        return authProvider.isAuthenticated
-            ? const HomePage()
-            : const LoginPage();
+        if (authProvider.isAuthenticated) {
+          // Cek apakah username adalah SPV
+          if (authProvider.user?.username == 'SPV_marketing_BBS') {
+            return const HomeSpv(); // Arahkan ke halaman SPV
+          }
+
+          // Jika bukan SPV, arahkan ke HomePage biasa
+          return const HomePage();
+        }
+
+        // Jika tidak terautentikasi, arahkan ke Login
+        return const LoginPage();
       },
     );
   }

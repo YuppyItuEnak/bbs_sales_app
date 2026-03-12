@@ -63,13 +63,19 @@ class _ReimburseListContentState extends State<_ReimburseListContent> {
     final provider = context.read<ReimburseProvider>();
 
     if (auth.token != null && auth.salesId != null) {
+      final bool isSpv = auth.user?.username == 'SPV_marketing_BBS';
       provider.setSearch(_currentSearchTerm);
       provider.fetch(
         token: auth.token!,
-        salesId: auth.salesId!,
+        salesId: isSpv ? null : auth.salesId,
         refresh: refresh,
       );
-      provider.checkReimburseToday(token: auth.token!, salesId: auth.salesId!);
+      if (!isSpv && auth.salesId != null) {
+        provider.checkReimburseToday(
+          token: auth.token!,
+          salesId: auth.salesId!,
+        );
+      }
     }
   }
 
@@ -153,8 +159,14 @@ class _ReimburseListContentState extends State<_ReimburseListContent> {
             ),
           ],
         ),
-        floatingActionButton: Consumer<ReimburseProvider>(
-          builder: (context, provider, child) {
+
+        floatingActionButton: Consumer2<ReimburseProvider, AuthProvider>(
+          builder: (context, provider, auth, child) {
+            final username = auth.user?.username;
+
+            if (username == 'SPV_marketing_BBS') {
+              return const SizedBox.shrink();
+            }
             final reimburseCheck = provider.reimburseCheck;
             bool buttonDisabled = false;
             VoidCallback? onPressedAction = () => Navigator.push(
@@ -233,7 +245,18 @@ class _ReimburseListContentState extends State<_ReimburseListContent> {
               MaterialPageRoute(
                 builder: (_) => DetailReimbursePage(reimburseId: item.id!),
               ),
-            );
+            ).then((result) {
+              if (result == true) {
+                final auth = context.read<AuthProvider>();
+
+                if (auth.token != null) {
+                  context.read<ReimburseProvider>().fetch(
+                    token: auth.token!,
+                    refresh: true,
+                  );
+                }
+              }
+            });
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

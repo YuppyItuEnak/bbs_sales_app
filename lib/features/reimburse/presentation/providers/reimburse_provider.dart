@@ -40,7 +40,7 @@ class ReimburseProvider extends ChangeNotifier {
   // ================= LIST =================
   Future<void> fetch({
     required String token,
-    required String salesId,
+    String? salesId, // Diubah menjadi nullable
     bool refresh = false,
   }) async {
     if (refresh) {
@@ -58,7 +58,7 @@ class ReimburseProvider extends ChangeNotifier {
     try {
       final data = await _repo.fetchReimburse(
         token: token,
-        salesId: salesId,
+        salesId: salesId, // Akan mengirim null jika user adalah SPV
         page: _page,
         paginate: _paginate,
         search: _search,

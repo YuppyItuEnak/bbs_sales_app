@@ -175,8 +175,9 @@ class _AddReimburseContentState extends State<_AddReimburseContent> {
     debugPrint("Rate_reimburse: $rate");
     if (endKm > startKm && rate > 0) {
       final selisih = endKm - startKm;
+      debugPrint("Selisih: $selisih");
       // simple multiply difference by rate per km
-      _calculatedTotal = selisih * rate;
+      _calculatedTotal = (selisih * rate) / 10;
 
       _amountController.text = NumberFormat(
         '#,##0.##',
@@ -277,7 +278,6 @@ class _AddReimburseContentState extends State<_AddReimburseContent> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    
                                     const SizedBox(height: 4),
                                     _buildLabel("Kilometer Awal*"),
                                     _buildTextField(

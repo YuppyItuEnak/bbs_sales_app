@@ -1,5 +1,6 @@
 import 'package:bbs_sales_app/core/constants/api_constants.dart';
 import 'package:bbs_sales_app/core/constants/app_colors.dart';
+import 'package:bbs_sales_app/data/models/reimburse/reimburse_add_model.dart';
 import 'package:bbs_sales_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:bbs_sales_app/features/reimburse/presentation/providers/reimburse_provider.dart';
 import 'package:flutter/material.dart';
@@ -67,8 +68,8 @@ class _DetailReimburseContentState extends State<_DetailReimburseContent> {
           ),
         ),
       ),
-      body: Consumer<ReimburseProvider>(
-        builder: (context, provider, child) {
+      body: Consumer2<ReimburseProvider, AuthProvider>(
+        builder: (context, provider, auth, child) {
           if (provider.isLoading) {
             return const Center(
               child: CircularProgressIndicator(color: Colors.white),
@@ -95,6 +96,9 @@ class _DetailReimburseContentState extends State<_DetailReimburseContent> {
 
           final item = provider.selected!;
           final isBensin = item.type == "Bensin";
+          final isSpv = auth.user?.username == 'SPV_marketing_BBS';
+          final bool showApproveAction =
+              isSpv && item.status != "LUNAS" && item.status != "APPROVED";
           final dateStr = item.date != null
               ? DateFormat('dd MMMM yyyy', 'id_ID').format(item.date!)
               : '-';
@@ -299,6 +303,81 @@ class _DetailReimburseContentState extends State<_DetailReimburseContent> {
                 ),
               ),
 
+              if (showApproveAction)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    top: 16.0,
+                  ),
+                  child: Row(
+                    children: [
+                      // TOMBOL REJECT
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: provider.isLoading
+                              ? null
+                              : () => _handleAction(context, 'REJECTED'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: provider.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  "REJECT",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      // TOMBOL APPROVE
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: provider.isLoading
+                              ? null
+                              : () => _handleAction(context, 'APPROVED'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF72C155),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: provider.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  "APPROVE",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // BOTTOM BUTTON
               Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -379,5 +458,61 @@ class _DetailReimburseContentState extends State<_DetailReimburseContent> {
         ),
       ],
     );
+  }
+
+  Future<void> _handleAction(BuildContext context, String newStatus) async {
+    final provider = context.read<ReimburseProvider>();
+    final auth = context.read<AuthProvider>();
+    final item = provider.selected; // Mengambil data item yang sedang dibuka
+
+    if (item == null || auth.token == null) return;
+
+    // Map data dari Model Detail ke CreateModel (untuk update)
+    final updateData = ReimburseCreateModel(
+      salesId: item.salesId ?? "",
+      type: item.type ?? "",
+      date: item.date ?? DateTime.now(),
+      unitBusinessId: item.unitBusinessId ?? "",
+      total: item.total ?? 0,
+      // rate_reimburse: item. ?? 0,
+      kmAwal: item.kmAwal ?? 0,
+      kmAkhir: item.kmAkhir ?? 0,
+      note: item.note ?? "",
+      fotoAwal: "", // Biarkan kosong agar tidak menimpa file lama di repo
+      fotoAkhir: "",
+      status: newStatus, // Status baru: 'APPROVED' atau 'REJECTED'
+      approvalCount: item.approvalCount ?? 0,
+      approvedCount: item.approvedCount ?? 0,
+      approvalLevel: item.currentApprovalLevel ?? 1,
+    );
+
+    final success = await provider.update(
+      auth.token!,
+      item.id!,
+      updateData,
+      null, // Tidak kirim file baru
+      null,
+    );
+
+    if (context.mounted) {
+      if (success) {
+        await provider.fetch(token: auth.token!);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Berhasil melakukan $newStatus"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true); // Kembali ke list setelah sukses
+      } else {
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Gagal: ${provider.error}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
